@@ -8,7 +8,7 @@ import (
 )
 
 func TestSetJSONLogger(t *testing.T) {
-	if err := internal.SetJSONLogger("debug"); err != nil {
+	if err := internal.SetJSONLogger("debug", "dev"); err != nil {
 		t.Fatal(err)
 	}
 

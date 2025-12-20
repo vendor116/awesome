@@ -5,7 +5,7 @@ VERSION := $(shell git describe --tags --always --dirty 2>/dev/null | sed 's/^v/
 build-bin:
 	$(info Building awesome binary file...)
 	CGO_ENABLED=0 GOOS=linux go build \
- 		-ldflags="-X github.com/vendor116/awesome/pkg/version.version=$(VERSION) -s -w" \
+ 		-ldflags="-X main.version=$(VERSION) -s -w" \
 		-o bin/awesome \
 		./cmd/awesome
 
@@ -32,23 +32,29 @@ compose-up:
 
 gen-openapi:
 	@echo "Generating OpenAPI models..."
-	oapi-codegen --config api/openapi/models.cfg.yaml api/openapi/openapi.yaml
+	oapi-codegen --config api/openapi/v1/models.cfg.yml api/openapi/v1/openapi.yml
 	@echo "Generating OpenAPI server..."
-	oapi-codegen --config api/openapi/server.cfg.yaml api/openapi/openapi.yaml
+	oapi-codegen --config api/openapi/v1/server.cfg.yml api/openapi/v1/openapi.yml
 	@echo "Generating OpenAPI client..."
-	oapi-codegen --config api/openapi/client.cfg.yaml api/openapi/openapi.yaml
+	oapi-codegen --config api/openapi/v1/client.cfg.yml api/openapi/v1/openapi.yml
 
+gen-protobuf:
+	$(info Generating protobuf files...)
+	protoc --proto_path=./api/proto \
+           --go_out=./pkg/protobuf/awesome \
+           --go_opt=paths=source_relative \
+           --go-grpc_out=./pkg/protobuf/awesome \
+           --go-grpc_opt=paths=source_relative \
+           ./api/proto/awesome.proto
 
 GOLANGCI_VERSION := v2.7.2
+OAPI_CODEGEN_VERSION := v2.5.1
 
-install-linter:
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | \
-		sh -s -- -b $$(go env GOPATH)/bin $(GOLANGCI_VERSION)
-
-OAPI_CODEGEN_VERSION := v2.2.0
-
-install-oapi-codegen:
-	go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@$(OAPI_CODEGEN_VERSION)
+install-tools:
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b $$(go env GOPATH)/bin $(GOLANGCI_VERSION)
+	go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@$(OAPI_CODEGEN_VERSION)
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
 .PHONY: \
 	build-bin \
@@ -58,5 +64,5 @@ install-oapi-codegen:
 	build-docker \
 	compose-up \
 	gen-openapi \
-	install-linter \
-	install-oapi-codegen
+	gen-protobuf \
+	install-tools

@@ -1,8 +1,17 @@
 {
-  "http_server": {
+  "rest_server": {
     "host": "127.0.0.1",
-    "port": "8080",
-    "read_header_timeout": "3s"
+    "port": 8081
   },
-  "log_level": "debug"
+  "grpc_server": {
+    "host": "127.0.0.1",
+    "port": 9001,
+    "reflect_enabled": true
+  },
+  "pprof_server": {
+    "host": "127.0.0.1",
+    "port": 6061
+  },
+  "log_level": "debug",
+  "pprof_enabled": false
 }

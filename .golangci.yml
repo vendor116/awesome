@@ -436,6 +436,10 @@ linters:
       # Default: false
       os-temp-dir: true
 
+    gosec:
+      excludes:
+        - G108
+
   exclusions:
     # Log a warning if an exclusion rule is unused.
     # Default: false

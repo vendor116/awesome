@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func SetJSONLogger(level string) error {
+func SetJSONLogger(level, version string) error {
 	var l slog.Level
 	if err := l.UnmarshalText([]byte(level)); err != nil {
 		return err
@@ -16,6 +16,8 @@ func SetJSONLogger(level string) error {
 			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 				Level: l,
 			}),
+		).With(
+			slog.String("version", version),
 		),
 	)
 	return nil

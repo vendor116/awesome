@@ -3,44 +3,74 @@ package main
 import (
 	"context"
 	"errors"
+	"flag"
 	"log"
 	"log/slog"
+	_ "net/http/pprof"
 	"os/signal"
 	"syscall"
 
 	"github.com/vendor116/awesome/internal"
 	"github.com/vendor116/awesome/internal/config"
-	httpserver "github.com/vendor116/awesome/internal/http_server"
-	"github.com/vendor116/awesome/internal/http_server/handlers"
-	"github.com/vendor116/awesome/pkg/version"
+	"github.com/vendor116/awesome/internal/web/grpc"
+	"github.com/vendor116/awesome/internal/web/grpc/awesome"
+	"github.com/vendor116/awesome/internal/web/pprof"
+	"github.com/vendor116/awesome/internal/web/rest"
+	v1 "github.com/vendor116/awesome/internal/web/rest/v1"
 	"golang.org/x/sync/errgroup"
 )
 
+var version = "dev"
+
 func main() {
-	cfg, err := config.LoadAndValidate()
+	var path, prefix string
+	flag.StringVar(&path, "config", "", "path to config file")
+	flag.StringVar(&prefix, "prefix", "", "environment variable prefix")
+	flag.Parse()
+
+	cfg, err := config.Load[config.App](path, prefix)
 	if err != nil {
 		log.Fatalf("failed to load config:%v", err)
 	}
 
-	err = internal.SetJSONLogger(cfg.LogLevel)
+	err = cfg.Validate()
+	if err != nil {
+		log.Fatalf("invalid config:%v", err)
+	}
+
+	err = internal.SetJSONLogger(cfg.LogLevel, version)
 	if err != nil {
 		log.Fatalf("failed to set json logger:%v", err)
 	}
 
-	slog.Default().Info("starting awesome", slog.String("version", version.GetVersion()))
-
-	vh := handlers.NewBaseHandler()
+	restV1Server := v1.NewServer()
+	grpcAwesomeServer := awesome.NewServer()
 
 	eg, egCtx := errgroup.WithContext(context.Background())
 	ctx, cancel := signal.NotifyContext(egCtx, syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	httpserver.Run(
+	rest.RunServer(
 		ctx,
 		eg,
-		httpserver.RegisterHandlers(vh),
-		cfg.HTTPServer,
+		restV1Server,
+		cfg.RESTServer,
 	)
+
+	grpc.RunServer(
+		ctx,
+		eg,
+		grpcAwesomeServer,
+		cfg.GRPCServer,
+	)
+
+	if cfg.PprofEnabled {
+		pprof.RunServer(
+			ctx,
+			eg,
+			cfg.PprofServer,
+		)
+	}
 
 	if err = eg.Wait(); err != nil && !errors.Is(err, context.Canceled) {
 		slog.Default().Error("application completed", "error", err)

@@ -2,24 +2,51 @@ package config
 
 import (
 	"errors"
-	"time"
+	"net"
+	"strconv"
 )
 
 type HTTPServer struct {
-	Host              string        `mapstructure:"host"`
-	Port              string        `mapstructure:"port"`
-	ReadHeaderTimeout time.Duration `mapstructure:"read_header_timeout"`
+	Host `mapstructure:"host"`
+	Port `mapstructure:"port"`
 }
 
-func (hs HTTPServer) Validate() error {
-	if hs.Host == "" {
-		return errors.New("host is required")
+func (s HTTPServer) Validate() error {
+	if err := s.Host.Validate(); err != nil {
+		return err
 	}
-	if hs.Port == "" {
-		return errors.New("port is required")
-	}
-	if hs.ReadHeaderTimeout == 0 {
-		return errors.New("read_header_timeout is required")
+	if err := s.Port.Validate(); err != nil {
+		return err
 	}
 	return nil
+}
+
+func (s HTTPServer) GetAddress() string {
+	return net.JoinHostPort(s.Host.String(), s.Port.String())
+}
+
+type Host string
+
+func (h Host) Validate() error {
+	if h == "" {
+		return errors.New("host is required")
+	}
+	return nil
+}
+
+func (h Host) String() string {
+	return string(h)
+}
+
+type Port int
+
+func (p Port) Validate() error {
+	if p < 0 || p > 65535 {
+		return errors.New("port is invalid")
+	}
+	return nil
+}
+
+func (p Port) String() string {
+	return strconv.Itoa(int(p))
 }

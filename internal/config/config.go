@@ -2,7 +2,6 @@ package config
 
 import (
 	"errors"
-	"flag"
 	"fmt"
 	"strings"
 
@@ -10,35 +9,34 @@ import (
 )
 
 type App struct {
-	HTTPServer HTTPServer `mapstructure:"http_server"`
+	RESTServer  HTTPServer `mapstructure:"rest_server"`
+	GRPCServer  GRPCServer `mapstructure:"grpc_server"`
+	PprofServer HTTPServer `mapstructure:"pprof_server"`
 
-	LogLevel string `mapstructure:"log_level"`
+	LogLevel     string `mapstructure:"log_level"`
+	PprofEnabled bool   `mapstructure:"pprof_enabled"`
 }
 
-func (ac App) Validate() error {
-	if err := ac.HTTPServer.Validate(); err != nil {
+func (a App) Validate() error {
+	if err := a.RESTServer.Validate(); err != nil {
 		return err
 	}
-	if ac.LogLevel == "" {
+	if err := a.GRPCServer.Validate(); err != nil {
+		return err
+	}
+	if a.LogLevel == "" {
 		return errors.New("log_level is required")
 	}
 	return nil
 }
 
-const prefix = "ASM"
-
-func LoadAndValidate() (*App, error) {
-	var path string
-	flag.StringVar(&path, "config", "", "path to config file")
-	flag.Parse()
-
+func Load[T any](path, prefix string) (*T, error) {
 	viper.AutomaticEnv()
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.SetEnvPrefix(prefix)
-
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.SetConfigFile(path)
 
-	var cfg App
+	var cfg T
 	if err := viper.ReadInConfig(); err != nil {
 		if errors.As(err, &viper.ConfigFileNotFoundError{}) {
 			return nil, err
@@ -49,10 +47,6 @@ func LoadAndValidate() (*App, error) {
 
 	if err := viper.Unmarshal(&cfg); err != nil {
 		return nil, fmt.Errorf("unable to decode into struct: %w", err)
-	}
-
-	if err := cfg.Validate(); err != nil {
-		return nil, fmt.Errorf("invalid config: %w", err)
 	}
 
 	return &cfg, nil
