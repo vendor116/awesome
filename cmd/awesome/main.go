@@ -17,6 +17,7 @@ import (
 	"github.com/vendor116/awesome/internal/web/pprof"
 	"github.com/vendor116/awesome/internal/web/rest"
 	v1 "github.com/vendor116/awesome/internal/web/rest/v1"
+	pkgconfig "github.com/vendor116/awesome/pkg/config"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -28,14 +29,9 @@ func main() {
 	flag.StringVar(&prefix, "prefix", "", "environment variable prefix")
 	flag.Parse()
 
-	cfg, err := config.Load[config.App](path, prefix)
+	cfg, err := pkgconfig.LoadAndValidate[config.App](path, prefix)
 	if err != nil {
 		log.Fatalf("failed to load config:%v", err)
-	}
-
-	err = cfg.Validate()
-	if err != nil {
-		log.Fatalf("invalid config:%v", err)
 	}
 
 	err = internal.SetJSONLogger(cfg.LogLevel, version)
