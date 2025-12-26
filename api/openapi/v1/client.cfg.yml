@@ -5,5 +5,5 @@ generate:
   client: true
   models: false
 
-output: pkg/rest/v1/client.gen.go
+output: pkg/openapi/v1/client.gen.go
 

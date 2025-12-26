@@ -7,4 +7,4 @@ generate:
   strict-server: true
   embedded-spec: false
 
-output: pkg/rest/v1/server.gen.go
+output: pkg/openapi/v1/server.gen.go

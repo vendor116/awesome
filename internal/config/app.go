@@ -8,11 +8,16 @@ import (
 	"github.com/spf13/viper"
 )
 
-type Validatable interface {
-	Validate() error
+type App struct {
+	RESTServer  HTTPServer `mapstructure:"rest_server"`
+	GRPCServer  GRPCServer `mapstructure:"grpc_server"`
+	PprofServer HTTPServer `mapstructure:"pprof_server"`
+
+	LogLevel    string `mapstructure:"log_level"`
+	PprofEnable bool   `mapstructure:"pprof_enable"`
 }
 
-func LoadAndValidate[T Validatable](path, prefix string) (*T, error) {
+func Load[T any](path, prefix string) (*T, error) {
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix(prefix)
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
@@ -29,10 +34,6 @@ func LoadAndValidate[T Validatable](path, prefix string) (*T, error) {
 
 	if err := viper.Unmarshal(&cfg); err != nil {
 		return nil, fmt.Errorf("unable to decode into struct: %w", err)
-	}
-
-	if err := cfg.Validate(); err != nil {
-		return nil, fmt.Errorf("invalid config: %w", err)
 	}
 
 	return &cfg, nil

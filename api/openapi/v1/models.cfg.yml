@@ -4,4 +4,4 @@ package: v1
 generate:
   models: true
 
-output: pkg/rest/v1/models.gen.go
+output: pkg/openapi/v1/models.gen.go

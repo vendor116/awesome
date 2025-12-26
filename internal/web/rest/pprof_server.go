@@ -9,27 +9,23 @@ import (
 	"strconv"
 
 	"github.com/vendor116/awesome/internal/config"
-	"github.com/vendor116/awesome/internal/web/rest/router"
-	v1 "github.com/vendor116/awesome/internal/web/rest/v1"
 	"golang.org/x/sync/errgroup"
 )
 
-func RunServer(ctx context.Context, g *errgroup.Group, cfg config.HTTPServer) {
-	v1Server := v1.NewServer()
-
+func RunPprofServer(ctx context.Context, g *errgroup.Group, cfg config.HTTPServer) {
 	s := http.Server{
 		Addr:              net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Port)),
-		Handler:           router.AttachHandlers(v1Server),
+		Handler:           http.DefaultServeMux,
 		ReadHeaderTimeout: cfg.ReadHeaderTimeout,
 	}
 
 	g.Go(func() error {
-		slog.Default().InfoContext(ctx, "starting rest server", "address", s.Addr)
+		slog.Default().InfoContext(ctx, "starting pprof server", "address", s.Addr)
 		err := s.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			return err
 		}
-		slog.Default().InfoContext(ctx, "rest server stopped")
+		slog.Default().InfoContext(ctx, "pprof server stopped")
 		return nil
 	})
 	g.Go(func() error {
@@ -40,7 +36,7 @@ func RunServer(ctx context.Context, g *errgroup.Group, cfg config.HTTPServer) {
 
 		err := s.Shutdown(ctx)
 		if err != nil {
-			slog.Default().ErrorContext(sdCtx, "failed to shutdown rest server", "error", err)
+			slog.Default().ErrorContext(sdCtx, "failed to shutdown pprof server", "error", err)
 		}
 		return nil
 	})

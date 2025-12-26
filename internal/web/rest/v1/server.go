@@ -1,7 +1,7 @@
 package v1
 
 import (
-	v1 "github.com/vendor116/awesome/pkg/rest/v1"
+	v1 "github.com/vendor116/awesome/pkg/openapi/v1"
 )
 
 var _ v1.StrictServerInterface = (*Server)(nil)

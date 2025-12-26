@@ -3,7 +3,7 @@ package v1
 import (
 	"context"
 
-	v1 "github.com/vendor116/awesome/pkg/rest/v1"
+	v1 "github.com/vendor116/awesome/pkg/openapi/v1"
 )
 
 type VersionHandlers struct{}

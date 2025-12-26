@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Middleware(logger *slog.Logger) gin.HandlerFunc {
+func Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 
@@ -37,11 +37,11 @@ func Middleware(logger *slog.Logger) gin.HandlerFunc {
 
 		switch {
 		case status >= http.StatusInternalServerError:
-			logger.Error("HTTP request error", logAttrs...)
+			slog.Default().Error("HTTP request error", logAttrs...)
 		case status >= http.StatusBadRequest:
-			logger.Warn("HTTP client error", logAttrs...)
+			slog.Default().Warn("HTTP client error", logAttrs...)
 		default:
-			logger.Debug("HTTP request", logAttrs...)
+			slog.Default().Debug("HTTP request", logAttrs...)
 		}
 	}
 }
