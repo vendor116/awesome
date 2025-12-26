@@ -17,6 +17,7 @@ func RunServer(
 	eg *errgroup.Group,
 	server awesome.AwesomeServer,
 	cfg config.GRPCServer,
+	loggerFactory func() *slog.Logger,
 ) {
 	s := grpc.NewServer()
 
@@ -26,7 +27,7 @@ func RunServer(
 
 	awesome.RegisterAwesomeServer(s, server)
 
-	logger := slog.Default().With(slog.String("server", "grpc"))
+	logger := loggerFactory()
 
 	eg.Go(func() error {
 		lc := &net.ListenConfig{}

@@ -10,16 +10,18 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func RunServer(ctx context.Context, g *errgroup.Group, h v1.StrictServerInterface, cfg config.HTTPServer) {
-	handlers := registerHandlers(h)
-
-	logger := slog.Default().With(slog.String("server", "rest"))
-
+func RunServer(
+	ctx context.Context,
+	g *errgroup.Group,
+	h v1.StrictServerInterface,
+	cfg config.HTTPServer,
+	loggerFactory func() *slog.Logger,
+) {
 	httpserver.Run(
 		ctx,
 		g,
 		cfg.GetAddress(),
-		handlers,
-		logger,
+		registerHandlers(h),
+		loggerFactory(),
 	)
 }

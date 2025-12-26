@@ -14,6 +14,15 @@ type options struct {
 	maxHeaderBytes    int
 }
 
+const (
+	readTimeout       = 5 * time.Second
+	readHeaderTimeout = 2 * time.Second
+	writeTimeout      = 10 * time.Second
+	idleTimeout       = 30 * time.Second
+	shutdownTimeout   = 3 * time.Second
+	maxHeaderBytes    = 1 << 20
+)
+
 func getDefaultOptions() options {
 	return options{
 		readHeaderTimeout: readHeaderTimeout,

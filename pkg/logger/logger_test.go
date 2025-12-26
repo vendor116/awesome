@@ -1,14 +1,14 @@
-package internal_test
+package logger_test
 
 import (
 	"log/slog"
 	"testing"
 
-	"github.com/vendor116/awesome/internal"
+	"github.com/vendor116/awesome/pkg/logger"
 )
 
 func TestSetJSONLogger(t *testing.T) {
-	if err := internal.SetJSONLogger("debug", "dev"); err != nil {
+	if err := logger.SetupJSONLogger("debug", "dev"); err != nil {
 		t.Fatal(err)
 	}
 

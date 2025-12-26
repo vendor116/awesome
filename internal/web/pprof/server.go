@@ -10,15 +10,17 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func RunServer(ctx context.Context, g *errgroup.Group, cfg config.HTTPServer) {
-	logger := slog.Default().With(slog.String("server", "pprof"))
-	h := http.DefaultServeMux
-
+func RunServer(
+	ctx context.Context,
+	g *errgroup.Group,
+	cfg config.HTTPServer,
+	loggerFactory func() *slog.Logger,
+) {
 	httpserver.Run(
 		ctx,
 		g,
 		cfg.GetAddress(),
-		h,
-		logger,
+		http.DefaultServeMux,
+		loggerFactory(),
 	)
 }
