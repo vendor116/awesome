@@ -1,7 +1,7 @@
 # This file is licensed under the terms of the MIT license https://opensource.org/license/mit
 # Copyright (c) 2021-2025 Marat Reimers
 
-## Golden config for golangci-lint v2.7.2
+## Golden config for golangci-lint v2.8.0
 #
 # This is the best config for golangci-lint based on my experience and opinion.
 # It is very strict, but not extremely strict.
@@ -66,6 +66,8 @@ linters:
     - funcorder # checks the order of functions, methods, and constructors
     - funlen # tool for detection of long functions
     - gocheckcompilerdirectives # validates go compiler directive comments (//go:)
+    - gochecknoglobals # checks that no global variables exist
+    - gochecknoinits # checks that no init functions are present in Go code
     - gochecksumtype # checks exhaustiveness on Go "sum types"
     - gocognit # computes and checks the cognitive complexity of functions
     - goconst # finds repeated strings that could be replaced by a constant
@@ -159,10 +161,6 @@ linters:
     #- thelper # detects golang test helpers without t.Helper() call and checks the consistency of test helpers
     #- wsl # [too strict and mostly code is not more readable] whitespace linter forces you to use empty lines
     #- wsl_v5 # [too strict and mostly code is not more readable] add or remove empty lines
-
-    ## my disabled
-    #- gochecknoglobals # checks that no global variables exist
-    #- gochecknoinits # checks that no init functions are present in Go code
 
   # All settings can be found here https://github.com/golangci/golangci-lint/blob/HEAD/.golangci.reference.yml
   settings:
@@ -323,6 +321,9 @@ linters:
         # Assert no unused link in godocs.
         # https://github.com/godoc-lint/godoc-lint?tab=readme-ov-file#no-unused-link
         - no-unused-link
+        # Require proper doc links to standard library declarations where applicable.
+        # https://github.com/godoc-lint/godoc-lint?tab=readme-ov-file#require-stdlib-doclink
+        - require-stdlib-doclink
 
     govet:
       # Enable all analyzers.
@@ -437,10 +438,6 @@ linters:
       # Enable/disable `os.TempDir()` detections.
       # Default: false
       os-temp-dir: true
-
-    gosec:
-      excludes:
-        - G108
 
   exclusions:
     # Log a warning if an exclusion rule is unused.

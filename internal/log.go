@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func SetLogger(level, version string) error {
+func SetupLog(level, version string) error {
 	var l slog.Level
 	if err := l.UnmarshalText([]byte(level)); err != nil {
 		return err
